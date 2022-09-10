@@ -35,25 +35,30 @@ public class TimestampTest {
         checkDb();
     }
 
-    private static Timestamp parse(String time) {
-        return Timestamp.from(LocalDateTime.parse(time).atZone(ZoneId.of("Europe/Moscow")).toInstant());
-    }
-
     @SneakyThrows
     private void fillDb() {
-        Timestamp[] examples = new Timestamp[]{
-                new Timestamp(0),
-                parse("2017-03-25T02:30:00")
+        TimeHolder[] examples = new TimeHolder[]{
+                TimeHolder.of(0),
+                TimeHolder.of(954027000000L),
+                TimeHolder.of("2000-03-26T02:30:00"),
+                TimeHolder.of(954027000000L + 3600000),
+                TimeHolder.of("2000-03-26T03:30:00"),
+                TimeHolder.of(972772200000L),
+                TimeHolder.of("2000-10-29T02:30:00"),
+                TimeHolder.of(972772200000L + 3600000),
+                TimeHolder.of("2000-10-29T03:30:00"),
         };
 
         connection.prepareStatement("delete from ts").executeUpdate();
         log.info("DB is cleaned up");
 
-        PreparedStatement insert = connection.prepareStatement("insert into ts (t, tz, s) values (?, ?, ?)");
+        PreparedStatement insert = connection.prepareStatement("insert into ts (s, t, tz, l, lz) values (?, ?, ?, ?, ?)");
         for (var ts : examples) {
-            insert.setTimestamp(1, ts);
-            insert.setTimestamp(2, ts);
-            insert.setString(3, ts.toString());
+            insert.setString(1, ts.toString());
+            insert.setTimestamp(2, ts.t);
+            insert.setTimestamp(3, ts.t);
+            insert.setObject(4, ts.l);
+            insert.setObject(5, ts.l);
             insert.executeUpdate();
             log.info("Inserted {}", ts);
         }
@@ -61,15 +66,19 @@ public class TimestampTest {
 
     @SneakyThrows
     private void checkDb() {
-        PreparedStatement select = connection.prepareStatement("select id, t, tz, s from ts order by id");
+        PreparedStatement select = connection.prepareStatement("select id, s, t, tz, l, lz from ts order by id");
         ResultSet resultSet = select.executeQuery();
         while (resultSet.next()) {
             long id = resultSet.getLong("id");
             Timestamp t = resultSet.getTimestamp("t");
             Timestamp tz = resultSet.getTimestamp("tz");
+
+            Timestamp l = resultSet.getTimestamp("l");
+            Timestamp lz = resultSet.getTimestamp("lz");
             String s = resultSet.getString("s");
 
-            log.info("t == tz: {}; id = {}, t = {}, tz = {}, s = {}", t.equals(tz), id, t, tz, s);
+            log.info("s = {}: t == tz: {}; l == lz: {}; id = {}, t = {}, tz = {}, l = {}, lz = {}",
+                    s, t.equals(tz), l.equals(lz), id, t, tz, l, lz);
         }
         resultSet.close();
     }
