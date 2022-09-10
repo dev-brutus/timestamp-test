@@ -1,15 +1,15 @@
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.function.Consumer;
+import java.util.logging.LogManager;
 
 @Slf4j
 public class TimestampTest {
@@ -17,8 +17,10 @@ public class TimestampTest {
 
     static {
         try {
+            LogManager.getLogManager().readConfiguration(
+                    TimestampTest.class.getResourceAsStream("/logging.properties"));
             Class.forName("org.postgresql.Driver");
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | IOException e) {
             throw new RuntimeException(e);
         }
     }
