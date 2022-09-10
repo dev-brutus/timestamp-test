@@ -24,7 +24,7 @@ public class TimeHolder {
 
     public static TimeHolder of(LocalDateTime l) {
         var t = Timestamp.from(l.atZone(zoneId).toInstant());
-        log.info("{} -> {} ({})", l, t, t.getTime());
+        log.debug("{} -> {} ({})", l, t, t.getTime());
         return new TimeHolder(t, l, 'l');
     }
 

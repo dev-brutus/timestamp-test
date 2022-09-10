@@ -51,6 +51,16 @@ public class TimestampTest {
                 TimeHolder.of("2000-10-29T03:30:00"),
         };
 
+        connection.prepareStatement("create table if not exists ts" +
+                "(" +
+                "    id bigserial primary key," +
+                "    s  text," +
+                "    t  timestamp," +
+                "    tz timestamptz," +
+                "    l  timestamp," +
+                "    lz timestamptz" +
+                ");").executeUpdate();
+
         connection.prepareStatement("delete from ts").executeUpdate();
         log.info("DB is cleaned up");
 
@@ -88,7 +98,7 @@ public class TimestampTest {
     private void doConnection(Consumer<Connection> func) throws SQLException {
 //        Connection connection = null;
         try {
-            connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/test", "postgres", "postgres");
+            connection = DriverManager.getConnection(DbSettings.url, DbSettings.user, DbSettings.password);
             connection.setAutoCommit(true);
             log.info("Connected to the PostgreSQL server successfully.");
 

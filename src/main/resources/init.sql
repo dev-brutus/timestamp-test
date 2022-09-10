@@ -1,6 +1,6 @@
 drop table if exists ts;
 
-create table ts
+create table if not exists ts
 (
     id bigserial primary key,
     s  text,
